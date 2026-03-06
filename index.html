@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DASSI BOURSE | Digital Securities Exchange</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080a0f;
+            color: #cbd5e1;
+        }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .bg-dark-card { background-color: #11141b; }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #080a0f; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+        .active-lang { color: #3b82f6; border-bottom: 2px solid #3b82f6; }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+
+    <!-- NAVIGATION -->
+    <nav class="border-b border-slate-800 bg-[#080a0f]/95 backdrop-blur-xl sticky top-0 z-50 px-6 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-10">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-2 rounded-xl shadow-lg">
+                    <i class="fas fa-layer-group text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white leading-none">DASSI <span class="text-blue-500">BOURSE</span></h1>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1" data-i18n="nav-subtitle">Digital Securities Exchange</p>
+                </div>
+            </div>
+            <div class="hidden lg:flex gap-8 text-[13px] font-semibold">
+                <a href="#" class="text-white border-b-2 border-blue-500 pb-1" data-i18n="nav-markets">Marchés</a>
+                <a href="#" class="text-slate-500 hover:text-white transition-colors" data-i18n="nav-portfolio">Portfolio</a>
+                <a href="#" class="text-slate-500 hover:text-white transition-colors" data-i18n="nav-issuance">Émission</a>
+                <a href="#" class="text-slate-500 hover:text-white transition-colors" data-i18n="nav-gov">Gouvernance</a>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <!-- LANGUAGE SWITCHER -->
+            <div class="flex items-center gap-3 text-[11px] font-black tracking-widest border-r border-slate-800 pr-6">
+                <button onclick="setLanguage('fr')" id="lang-fr" class="transition-colors hover:text-white active-lang">FR</button>
+                <span class="text-slate-800">|</span>
+                <button onclick="setLanguage('en')" id="lang-en" class="transition-colors hover:text-white text-slate-500">EN</button>
+            </div>
+
+            <div id="network-badge" class="hidden sm:flex items-center gap-2 bg-slate-900/50 border border-slate-800 px-3 py-1.5 rounded-full text-[11px] font-bold">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Polygon Mainnet
+            </div>
+            <button onclick="toggleWallet()" id="wallet-btn" class="px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-500 shadow-xl shadow-blue-900/20">
+                <i class="fas fa-wallet"></i>
+                <span id="wallet-text" data-i18n="connect-wallet">Connecter Wallet</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- SIDEBAR GAUCHE -->
+        <div class="lg:col-span-3 space-y-4">
+            <div class="bg-dark-card rounded-2xl border border-slate-800/60 overflow-hidden">
+                <div class="p-4 border-b border-slate-800/60 flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500" data-i18n="sidebar-title">Valeurs Mobilières (RWA)</h3>
+                    <i class="fas fa-search text-slate-500 text-xs"></i>
+                </div>
+                <div id="asset-list" class="max-h-[600px] overflow-y-auto"></div>
+            </div>
+
+            <div class="bg-gradient-to-br from-indigo-900/20 to-blue-900/10 rounded-2xl border border-blue-800/30 p-5">
+                <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <i class="fas fa-shield-halved"></i> <span data-i18n="compliance-title">Conformité Institutionnelle</span>
+                </h4>
+                <p class="text-[11px] text-slate-400 leading-relaxed mb-4" data-i18n="compliance-desc">
+                    Protocole de sécurité **ERC-3643**. Chaque transaction est vérifiée par les validateurs de conformité on-chain.
+                </p>
+                <button class="w-full py-2 bg-blue-500/10 text-blue-400 rounded-lg text-[10px] font-black uppercase hover:bg-blue-500/20 transition-all" data-i18n="verify-btn">
+                    Vérifier mon identité (KYC)
+                </button>
+            </div>
+        </div>
+
+        <!-- ZONE CENTRALE -->
+        <div class="lg:col-span-6 space-y-5">
+            <div class="bg-dark-card rounded-3xl border border-slate-800/60 p-6 lg:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
+                    <div id="active-asset-info"></div>
+                    <div class="text-right" id="active-asset-price"></div>
+                </div>
+
+                <div class="h-80 bg-[#080a0f] rounded-2xl border border-slate-800/60 p-4 relative group overflow-hidden flex items-end justify-between gap-1 px-8">
+                    <div class="absolute top-4 left-4 flex gap-2 z-10">
+                        <span class="bg-blue-600/20 text-blue-400 text-[10px] font-bold px-2 py-1 rounded">1D</span>
+                        <span class="text-slate-600 text-[10px] font-bold px-2 py-1">1W</span>
+                        <span class="text-slate-600 text-[10px] font-bold px-2 py-1">1M</span>
+                        <span class="text-slate-600 text-[10px] font-bold px-2 py-1">1Y</span>
+                    </div>
+                    <!-- Mock bars -->
+                    <div class="flex-1 bg-blue-500/10 h-[40%] rounded-t-sm"></div>
+                    <div class="flex-1 bg-blue-500/20 h-[55%] rounded-t-sm"></div>
+                    <div class="flex-1 bg-blue-500/15 h-[45%] rounded-t-sm"></div>
+                    <div class="flex-1 bg-blue-500/30 h-[65%] rounded-t-sm"></div>
+                    <div class="flex-1 bg-blue-500/25 h-[60%] rounded-t-sm"></div>
+                    <div class="flex-1 bg-blue-600/50 h-[85%] rounded-t-sm border-t border-blue-400"></div>
+                    <div class="flex-1 bg-blue-500/30 h-[75%] rounded-t-sm"></div>
+                    <div class="flex-1 bg-blue-500/40 h-[90%] rounded-t-sm"></div>
+                    <div class="flex-1 bg-blue-600/60 h-[95%] rounded-t-sm border-t-2 border-blue-400"></div>
+                    <div class="flex-1 bg-blue-500/40 h-[80%] rounded-t-sm"></div>
+                    
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-[#080a0f]/60 backdrop-blur-sm z-20">
+                        <button class="bg-white text-black px-5 py-2.5 rounded-xl text-xs font-bold shadow-2xl transition-transform hover:scale-105">
+                            <i class="fas fa-chart-line mr-2"></i> <span data-i18n="analysis-btn">Analyse Temps Réel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8" id="metrics-grid"></div>
+            </div>
+
+            <div class="bg-dark-card rounded-2xl border border-slate-800/60 p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <i class="fas fa-circle-info text-blue-500"></i>
+                    <h4 class="text-sm font-bold text-white uppercase tracking-wider" data-i18n="thesis-title">Thèse d'investissement & Impact</h4>
+                </div>
+                <p id="asset-description" class="text-xs text-slate-400 leading-relaxed italic"></p>
+            </div>
+        </div>
+
+        <!-- TERMINAL D'EXÉCUTION -->
+        <div class="lg:col-span-3 space-y-5">
+            <div class="bg-dark-card rounded-3xl border border-slate-800/60 p-6">
+                <div class="flex gap-1 p-1 bg-[#080a0f] rounded-xl mb-6">
+                    <button onclick="setSide('buy')" id="btn-buy" class="flex-1 py-2.5 rounded-lg text-xs font-black transition-all bg-green-600 text-white shadow-lg" data-i18n="trade-buy">ACHETER</button>
+                    <button onclick="setSide('sell')" id="btn-sell" class="flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-slate-500" data-i18n="trade-sell">VENDRE</button>
+                </div>
+
+                <div class="space-y-5">
+                    <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase px-1">
+                        <button class="text-blue-500" data-i18n="order-limit">Limit Order</button>
+                        <button class="hover:text-slate-300" data-i18n="order-market">Market</button>
+                    </div>
+
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[10px] font-black uppercase" data-i18n="field-price">Prix</span>
+                        <input type="text" id="order-price" readonly class="w-full bg-[#080a0f] border border-slate-700 rounded-xl py-4 pl-16 pr-4 text-right font-mono text-white text-sm">
+                    </div>
+
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[10px] font-black uppercase" data-i18n="field-amount">Montant</span>
+                        <input type="number" id="order-amount" oninput="updateTotal()" placeholder="0.00" class="w-full bg-[#080a0f] border border-slate-700 rounded-xl py-4 pl-24 pr-4 text-right font-mono text-white text-sm focus:border-blue-500 outline-none transition-all">
+                    </div>
+
+                    <div class="pt-2 space-y-2 border-t border-slate-800/60">
+                        <div class="flex justify-between text-[11px]">
+                            <span class="text-slate-500 font-medium" data-i18n="total-value">Valeur Totale</span>
+                            <span id="order-total" class="text-white font-mono">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-[11px]">
+                            <span class="text-slate-500 font-medium" data-i18n="gas-label">Frais (L2 Fast)</span>
+                            <span class="text-green-400 font-bold" data-i18n="gas-value">Inclus</span>
+                        </div>
+                    </div>
+
+                    <button onclick="executeOrder()" id="exec-btn" class="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all mt-2 bg-green-600 hover:bg-green-500 text-white shadow-xl active:scale-95" data-i18n="confirm-btn">
+                        Confirmer l'Ordre
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-dark-card rounded-3xl border border-slate-800/60 p-6">
+                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <i class="fas fa-briefcase text-blue-500"></i> <span data-i18n="portfolio-title">Positions Actuelles</span>
+                </h4>
+                <div id="portfolio-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="fixed bottom-0 left-0 right-0 bg-[#080a0f] border-t border-slate-800 px-6 py-2 flex justify-between items-center text-[10px] text-slate-500 font-bold z-50">
+        <div class="flex gap-6 items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                <span data-i18n="footer-status">RÉSEAU OPÉRATIONNEL</span>
+            </div>
+            <div class="hidden md:block">TPS: 2,450 tx/s</div>
+        </div>
+        <div class="flex gap-4">
+            <span class="text-blue-500 cursor-pointer hover:underline" data-i18n="footer-support">Support Technique</span>
+        </div>
+    </footer>
+
+    <div id="notif" class="fixed top-20 right-6 z-[100] transform translate-x-96 transition-transform duration-300">
+        <div class="bg-slate-900 border-l-4 border-blue-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4">
+            <i id="notif-icon" class="fas fa-info-circle text-blue-400 text-xl"></i>
+            <span id="notif-text" class="text-sm font-bold"></span>
+        </div>
+    </div>
+
+    <script>
+        const I18N = {
+            fr: {
+                'nav-subtitle': 'Digital Securities Exchange',
+                'nav-markets': 'Marchés',
+                'nav-portfolio': 'Portfolio',
+                'nav-issuance': 'Émission',
+                'nav-gov': 'Gouvernance',
+                'connect-wallet': 'Connecter Wallet',
+                'sidebar-title': 'Valeurs Mobilières (RWA)',
+                'compliance-title': 'Conformité Institutionnelle',
+                'compliance-desc': 'Protocole de sécurité **ERC-3643**. Chaque transaction est vérifiée par les validateurs on-chain.',
+                'verify-btn': 'Vérifier mon identité (KYC)',
+                'analysis-btn': 'Analyse Temps Réel',
+                'thesis-title': "Thèse d'investissement & Impact",
+                'trade-buy': 'ACHETER',
+                'trade-sell': 'VENDRE',
+                'order-limit': 'Limit Order',
+                'order-market': 'Market',
+                'field-price': 'Prix',
+                'field-amount': 'Montant',
+                'total-value': 'Valeur Totale',
+                'gas-label': 'Frais (L2 Fast)',
+                'gas-value': 'Inclus',
+                'confirm-btn': "Confirmer l'Ordre",
+                'portfolio-title': 'Positions Actuelles',
+                'footer-status': 'RÉSEAU OPÉRATIONNEL',
+                'footer-support': 'Support Technique',
+                'notif-wallet': 'Portefeuille connecté via Polygon',
+                'notif-exec': 'Ordre exécuté sur le Smart Contract.',
+                'notif-error-wallet': "Veuillez d'abord connecter votre wallet",
+                'empty-portfolio': 'Aucune position ouverte',
+                'metric-cap': 'Market Cap',
+                'metric-vol': 'Volume 24h',
+                'metric-holders': 'Détenteurs',
+                'type-bond': 'Obligation',
+                'type-stock': 'Action',
+                'type-debt': 'Titre de Créance'
+            },
+            en: {
+                'nav-subtitle': 'Digital Securities Exchange',
+                'nav-markets': 'Markets',
+                'nav-portfolio': 'Portfolio',
+                'nav-issuance': 'Issuance',
+                'nav-gov': 'Governance',
+                'connect-wallet': 'Connect Wallet',
+                'sidebar-title': 'Securities (RWA)',
+                'compliance-title': 'Institutional Compliance',
+                'compliance-desc': 'Security Protocol **ERC-3643**. Every transaction is verified by on-chain compliance validators.',
+                'verify-btn': 'Verify Identity (KYC)',
+                'analysis-btn': 'Real-Time Analysis',
+                'thesis-title': 'Investment Thesis & Impact',
+                'trade-buy': 'BUY',
+                'trade-sell': 'SELL',
+                'order-limit': 'Limit Order',
+                'order-market': 'Market',
+                'field-price': 'Price',
+                'field-amount': 'Amount',
+                'total-value': 'Total Value',
+                'gas-label': 'Gas (L2 Fast)',
+                'gas-value': 'Included',
+                'confirm-btn': 'Confirm Order',
+                'portfolio-title': 'Current Positions',
+                'footer-status': 'NETWORK OPERATIONAL',
+                'footer-support': 'Technical Support',
+                'notif-wallet': 'Wallet connected via Polygon',
+                'notif-exec': 'Order executed on Smart Contract.',
+                'notif-error-wallet': 'Please connect your wallet first',
+                'empty-portfolio': 'No open positions',
+                'metric-cap': 'Market Cap',
+                'metric-vol': 'Volume 24h',
+                'metric-holders': 'Holders',
+                'type-bond': 'Bond',
+                'type-stock': 'Equity',
+                'type-debt': 'Debt Security'
+            }
+        };
+
+        const ASSETS = [
+            { id: "RWA-EDU-01", symbol: "EDUK", names: {fr: "Infrastructure Éducative Abidjan", en: "Abidjan Education Infrastructure"}, types: {fr: "type-bond", en: "type-bond"}, price: 125.50, change: +2.4, vol: "1.2M", yield: "7.2%", rating: "A-", descs: {fr: "Financement de l'extension du complexe scolaire numérique d'Anyama. Rendements garantis par les frais de scolarité.", en: "Funding for Anyama digital school expansion. Returns secured by tuition fees."} },
+            { id: "RWA-HLT-04", symbol: "CARE", names: {fr: "Cliniques Mobiles Sahel", en: "Sahel Mobile Clinics"}, types: {fr: "type-stock", en: "type-stock"}, price: 89.20, change: -0.8, vol: "840K", yield: "8.5%", rating: "BBB+", descs: {fr: "Titres de capital MedX. Flotte médicale couvrant 3 pays du Sahel.", en: "MedX equity shares. Medical fleet covering 3 Sahel countries."} },
+            { id: "RWA-AGR-09", symbol: "AGRI", names: {fr: "Fermes Solaires & Irrigation", en: "Solar Farms & Irrigation"}, types: {fr: "type-debt", en: "type-debt"}, price: 250.00, change: +1.1, vol: "2.5M", yield: "6.8%", rating: "A", descs: {fr: "Obligations vertes finançant l'irrigation solaire.", en: "Green bonds financing solar irrigation systems."} }
+        ];
+
+        let activeAsset = ASSETS[0];
+        let walletConnected = false;
+        let side = 'buy';
+        let currentLang = 'fr';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.innerText = I18N[lang][key] || key;
+            });
+            
+            document.getElementById('lang-fr').className = lang === 'fr' ? 'active-lang' : 'text-slate-500';
+            document.getElementById('lang-en').className = lang === 'en' ? 'active-lang' : 'text-slate-500';
+            
+            renderAssetList();
+            selectAsset(activeAsset.id);
+        }
+
+        function renderAssetList() {
+            const list = document.getElementById('asset-list');
+            list.innerHTML = ASSETS.map(a => `
+                <div onclick="selectAsset('${a.id}')" class="p-4 cursor-pointer border-l-2 ${activeAsset.id === a.id ? 'bg-blue-600/5 border-blue-500' : 'border-transparent hover:bg-slate-800/20'}">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-sm text-white">${a.symbol}</span>
+                        <span class="text-[11px] font-mono ${a.change >= 0 ? 'text-green-400' : 'text-red-400'}">
+                            ${a.change >= 0 ? '▲' : '▼'} ${Math.abs(a.change)}%
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="text-[11px] text-slate-500 truncate w-32">${a.names[currentLang]}</p>
+                        <span class="text-[11px] text-slate-400 font-mono">$${a.price.toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectAsset(id) {
+            activeAsset = ASSETS.find(a => a.id === id);
+            
+            document.getElementById('active-asset-info').innerHTML = `
+                <div class="flex items-center gap-3 mb-2">
+                    <h2 class="text-2xl font-black text-white">${activeAsset.names[currentLang]}</h2>
+                    <span class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded text-[10px] font-bold">${I18N[currentLang][activeAsset.types[currentLang]]}</span>
+                </div>
+                <div class="flex items-center gap-4 text-slate-500 text-xs font-bold uppercase tracking-tighter">
+                    <span><i class="fas fa-globe mr-1"></i> Primary Market</span>
+                    <span class="text-blue-500"><i class="fas fa-check-circle mr-1"></i> Verified Token</span>
+                </div>
+            `;
+
+            document.getElementById('active-asset-price').innerHTML = `
+                <div class="text-3xl font-mono font-bold text-white tracking-tighter">$${activeAsset.price.toFixed(2)}</div>
+                <div class="text-[11px] font-bold text-green-400 mt-1 uppercase">Coupon: ${activeAsset.yield}</div>
+            `;
+
+            document.getElementById('metrics-grid').innerHTML = [
+                { label: I18N[currentLang]['metric-cap'], val: activeAsset.vol, icon: "fa-chart-area" },
+                { label: I18N[currentLang]['metric-vol'], val: activeAsset.vol, icon: "fa-wave-square" },
+                { label: "Rating", val: activeAsset.rating, icon: "fa-award" },
+                { label: I18N[currentLang]['metric-holders'], val: "2,142", icon: "fa-users" }
+            ].map(m => `
+                <div class="bg-[#0d1117] p-4 rounded-2xl border border-slate-800/40">
+                    <p class="text-[10px] font-black text-slate-500 uppercase flex items-center gap-1.5 mb-1">
+                        <i class="fas ${m.icon} text-blue-500/50"></i> ${m.label}
+                    </p>
+                    <p class="text-lg font-black text-white">${m.val}</p>
+                </div>
+            `).join('');
+
+            document.getElementById('asset-description').innerText = `"${activeAsset.descs[currentLang]}"`;
+            document.getElementById('order-price').value = activeAsset.price.toFixed(2);
+            renderAssetList();
+            updateTotal();
+        }
+
+        function setSide(s) {
+            side = s;
+            const buy = document.getElementById('btn-buy');
+            const sell = document.getElementById('btn-sell');
+            const exec = document.getElementById('exec-btn');
+
+            buy.className = s === 'buy' ? "flex-1 py-2.5 rounded-lg text-xs font-black transition-all bg-green-600 text-white shadow-lg" : "flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-slate-500";
+            sell.className = s === 'sell' ? "flex-1 py-2.5 rounded-lg text-xs font-black transition-all bg-red-600 text-white shadow-lg" : "flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-slate-500";
+            
+            exec.className = `w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all mt-2 text-white shadow-xl ${s === 'buy' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`;
+            exec.innerText = I18N[currentLang]['confirm-btn'];
+        }
+
+        function toggleWallet() {
+            walletConnected = !walletConnected;
+            const btn = document.getElementById('wallet-btn');
+            const text = document.getElementById('wallet-text');
+            if (walletConnected) {
+                btn.className = "px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 bg-slate-800 text-blue-400 border border-slate-700";
+                text.innerText = "0x8b2...f3A";
+                showNotif(I18N[currentLang]['notif-wallet'], "fa-check-circle");
+            } else {
+                btn.className = "px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 bg-blue-600 text-white shadow-xl shadow-blue-900/20";
+                text.innerText = I18N[currentLang]['connect-wallet'];
+            }
+        }
+
+        function executeOrder() {
+            if (!walletConnected) {
+                showNotif(I18N[currentLang]['notif-error-wallet'], "fa-exclamation-triangle", "border-red-500");
+                return;
+            }
+            const amount = document.getElementById('order-amount').value;
+            if (!amount || amount <= 0) return;
+
+            showNotif(I18N[currentLang]['notif-exec'], "fa-bolt");
+            const port = document.getElementById('portfolio-list');
+            if (port.innerText.includes(I18N['fr']['empty-portfolio']) || port.innerText.includes(I18N['en']['empty-portfolio'])) port.innerHTML = '';
+            
+            port.innerHTML += `
+                <div class="bg-[#080a0f] p-3 rounded-xl border border-slate-800/40 flex justify-between items-center animate-pulse">
+                    <div>
+                        <p class="text-[10px] font-black text-white uppercase">${activeAsset.symbol}</p>
+                        <p class="text-[9px] text-slate-500">${amount} units</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-mono font-bold text-white">$${(amount * activeAsset.price).toFixed(2)}</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('order-amount').value = '';
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const amount = document.getElementById('order-amount').value || 0;
+            document.getElementById('order-total').innerText = `$${(amount * activeAsset.price).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        }
+
+        function showNotif(text, icon, border = "border-blue-500") {
+            const el = document.getElementById('notif');
+            document.getElementById('notif-text').innerText = text;
+            document.getElementById('notif-icon').className = `fas ${icon} text-blue-400 text-xl`;
+            el.querySelector('div').className = `bg-slate-900 border-l-4 ${border} text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4`;
+            el.classList.remove('translate-x-96');
+            setTimeout(() => el.classList.add('translate-x-96'), 3000);
+        }
+
+        // INIT
+        setLanguage('fr');
+        const port = document.getElementById('portfolio-list');
+        port.innerHTML = `<p class="text-[11px] text-slate-600 text-center py-4">${I18N[currentLang]['empty-portfolio']}</p>`;
+    </script>
+</body>
+</html>
